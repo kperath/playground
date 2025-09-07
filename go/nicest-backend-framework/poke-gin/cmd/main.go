@@ -1,0 +1,30 @@
+package main
+
+import (
+	"log"
+	"net/http"
+	"os"
+	"plaground/nicest-backend-framework/pokedex"
+
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	f, err := os.Open("data.json")
+	if err != nil {
+		panic(err)
+	}
+	dex, err := pokedex.New(f)
+	if err != nil {
+		panic(err)
+	}
+
+	r := gin.Default()
+
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"pokemon": dex.Pokemon,
+		})
+	})
+	log.Fatal(r.Run())
+}
