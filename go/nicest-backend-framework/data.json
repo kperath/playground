@@ -23,13 +23,13 @@
         "sp_attack": 65,
         "sp_defense": 65,
         "hp": 45,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 1,
+        "item": "Oran Berry",
+        "nature": "Adament",
         "attacks": [
-            "",
-            "",
-            "",
+            "Tackle",
+            "Growl",
+            "Vine Whip",
             ""
         ],
         "image": ""
@@ -58,14 +58,14 @@
         "sp_attack": 80,
         "sp_defense": 80,
         "hp": 60,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 16,
+        "item": "Oran Berry",
+        "nature": "Adament",
         "attacks": [
-            "",
-            "",
-            "",
-            ""
+            "Tackle",
+            "Razor Leaf",
+            "Posion Powder",
+            "Sleep Powder"
         ],
         "image": ""
     },
@@ -93,14 +93,14 @@
         "sp_attack": 122,
         "sp_defense": 120,
         "hp": 80,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 32,
+        "item": "Oran Berry",
+        "nature": "Adament",
         "attacks": [
-            "",
-            "",
-            "",
-            ""
+            "Tackle",
+            "Posion Powder",
+            "Petal Blizzard",
+            "Seed Bomb"
         ],
         "image": ""
     },
@@ -128,13 +128,13 @@
         "sp_attack": 60,
         "sp_defense": 50,
         "hp": 39,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 5,
+        "item": "Oran Berry",
+        "nature": "Jolly",
         "attacks": [
-            "",
-            "",
-            "",
+            "Scratch",
+            "Growl",
+            "Ember",
             ""
         ],
         "image": ""
@@ -163,14 +163,14 @@
         "sp_attack": 80,
         "sp_defense": 65,
         "hp": 58,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 16,
+        "item": "Oran Berry",
+        "nature": "Jolly",
         "attacks": [
-            "",
-            "",
-            "",
-            ""
+            "Ember",
+            "Scratch",
+            "Smokescreen",
+            "Dragon Breath"
         ],
         "image": ""
     },
@@ -198,14 +198,14 @@
         "sp_attack": 159,
         "sp_defense": 115,
         "hp": 78,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 36,
+        "item": "Oran Berry",
+        "nature": "Jolly",
         "attacks": [
-            "",
-            "",
-            "",
-            ""
+            "Flamethrower",
+            "Slash",
+            "Air Slash",
+            "Dragon Breath"
         ],
         "image": ""
     },
@@ -233,13 +233,13 @@
         "sp_attack": 50,
         "sp_defense": 64,
         "hp": 44,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 5,
+        "item": "Oran Berry",
+        "nature": "Timid",
         "attacks": [
-            "",
-            "",
-            "",
+            "Tackle",
+            "Tail Whip",
+            "Water Gun",
             ""
         ],
         "image": ""
@@ -268,14 +268,14 @@
         "sp_attack": 65,
         "sp_defense": 80,
         "hp": 59,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 16,
+        "item": "Oran Berry",
+        "nature": "Timid",
         "attacks": [
-            "",
-            "",
-            "",
-            ""
+            "Tackle",
+            "Bite",
+            "Rapid Spin",
+            "Water Pulse"
         ],
         "image": ""
     },
@@ -303,14 +303,14 @@
         "sp_attack": 135,
         "sp_defense": 115,
         "hp": 79,
-        "level": 0,
-        "item": "",
-        "nature": "",
+        "level": 36,
+        "item": "Timid",
+        "nature": "Oran Berry",
         "attacks": [
-            "",
-            "",
-            "",
-            ""
+            "Tackle",
+            "Aqua Tail",
+            "Shell Smash",
+            "Flash Cannon"
         ],
         "image": ""
     }
