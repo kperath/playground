@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	dex, err := pokemon.New(f)
+	dex, err := pokemon.NewParty(f)
 	if err != nil {
 		panic(err)
 	}
