@@ -1,4 +1,4 @@
-package pokedex
+package pokemon
 
 import (
 	"encoding/json"
@@ -34,19 +34,19 @@ type Pokemon struct {
 	Image            []byte    `json:"image,omitempty"`
 }
 
-// Pokedex ...
-type Pokedex struct {
+// Party ...
+type Party struct {
 	Pokemon []*Pokemon
 }
 
-// New inits the client
-func New(data io.Reader) (*Pokedex, error) {
+// NewParty inits the client
+func NewParty(data io.Reader) (*Party, error) {
 	var pokemon []*Pokemon
 	err := json.NewDecoder(data).Decode(&pokemon)
 	if err != nil {
 		return nil, err
 	}
-	return &Pokedex{
+	return &Party{
 		Pokemon: pokemon,
 	}, nil
 }

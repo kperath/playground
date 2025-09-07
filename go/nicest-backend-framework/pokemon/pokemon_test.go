@@ -1,4 +1,4 @@
-package pokedex
+package pokemon
 
 import (
 	"strings"
@@ -66,7 +66,7 @@ var (
 }]`
 )
 
-func TestNewPokedex(t *testing.T) {
+func TestNewParty(t *testing.T) {
 	f := strings.NewReader(testPokemonData)
 	dex, err := New(f)
 	if err != nil {
