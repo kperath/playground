@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// Pokemon represents a Pokémon with its attributes.
+// Pokemon ...
 type Pokemon struct {
 	PokedexNumber    int       `json:"pokedex_number,omitempty"`
 	IsLegendary      bool      `json:"is_legendary,omitempty"`
@@ -36,7 +36,7 @@ type Pokemon struct {
 
 // Party ...
 type Party struct {
-	Pokemon []*Pokemon
+	Pokemon []*Pokemon `json:"pokemon,omitempty"`
 }
 
 // NewParty inits the client

@@ -68,7 +68,7 @@ var (
 
 func TestNewParty(t *testing.T) {
 	f := strings.NewReader(testPokemonData)
-	dex, err := New(f)
+	dex, err := NewParty(f)
 	if err != nil {
 		t.Fatal(err)
 	}
