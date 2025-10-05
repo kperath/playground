@@ -2,11 +2,11 @@ package storer
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 
 	"playground/poke-api/types"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,20 +26,17 @@ func NewDatabase(pool *pgxpool.Pool) *Database {
 	}
 }
 
-//TODO: api, and instrumentation
-
 func (db *Database) GetPokemon(ctx context.Context, pokedexNumber int) (*types.Pokemon, error) {
-	var pokemonJSON pgtype.JSONBCodec
+	var pokemonJSON []byte
 	err := db.pool.QueryRow(ctx, `
-		SELECT pokemon FROM pokedex WHERE pokedexNumber = $1
+		SELECT pokemon FROM pokedex WHERE entry = $1
 		`, pokedexNumber).Scan(&pokemonJSON)
 	if err != nil {
 		db.log.Error("getting pokemon", "error", err.Error())
 		return nil, types.ErrGetPokemon
 	}
 	pkmn := &types.Pokemon{}
-	pokemonJSON.Unmarshal()
-	// if err := json.Unmarshal()
+	json.Unmarshal(pokemonJSON, pkmn)
 	return pkmn, nil
 }
 func (db *Database) AddPokemon() error {
