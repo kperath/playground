@@ -13,3 +13,6 @@ type Pokemon struct {
 }
 
 var ErrGetPokemon = errors.New("failed to get pokemon")
+var ErrAddPokemon = errors.New("failed to add pokemon")
+var ErrDeletePokemon = errors.New("failed to delete pokemon")
+var ErrUpdatePokemon = errors.New("failed to update pokemon")

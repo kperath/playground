@@ -2,7 +2,6 @@ package storer
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"log/slog"
 	"os"
@@ -22,7 +21,6 @@ func setup(ctx context.Context) *pgxpool.Pool {
 	// Drop table if exists (for repeatable tests)
 	_, _ = pool.Exec(ctx, `DROP TABLE IF EXISTS pokedex;`)
 
-	// Create table
 	_, err = pool.Exec(ctx, `
 		CREATE TABLE pokedex (
 			id SERIAL PRIMARY KEY,
@@ -36,12 +34,16 @@ func setup(ctx context.Context) *pgxpool.Pool {
 	return pool
 }
 
-func TestGetPokemon(t *testing.T) {
-	ctx := context.Background()
-	p := setup(ctx)
-	defer p.Close()
+func cleanup(ctx context.Context, pool *pgxpool.Pool) {
+	defer pool.Close()
+	_, err := pool.Exec(ctx, `DROP TABLE IF EXISTS pokedex;`)
+	if err != nil {
+		log.Panic(err)
+	}
+}
 
-	expectedPokemon := &types.Pokemon{
+func testPokemon() *types.Pokemon {
+	return &types.Pokemon{
 		Id:        1,
 		Name:      "Bulbasaur",
 		Type1:     "Grass",
@@ -49,18 +51,87 @@ func TestGetPokemon(t *testing.T) {
 		Abilities: [2]string{"Overgrow", "Chlorophyll"},
 		ImageUrl:  "bulbasaur.png",
 	}
+}
 
+func TestGetPokemon(t *testing.T) {
+	ctx := context.Background()
+	p := setup(ctx)
+	defer cleanup(ctx, p)
+
+	expectedPokemon := testPokemon()
 	d := Database{
 		pool: p,
 		log:  slog.Default(),
 	}
-	pokemonJSON, err := json.Marshal(expectedPokemon)
-	_, err = d.pool.Exec(ctx,
-		`INSERT INTO pokedex (entry, pokemon) VALUES ($1, $2)`, 1, pokemonJSON,
+	_, err := d.pool.Exec(ctx,
+		`INSERT INTO pokedex (entry, pokemon) VALUES ($1, $2)`, 1, expectedPokemon,
 	)
 	assert.NilError(t, err, "failed to insert test pokemon")
 
 	got, err := d.GetPokemon(ctx, 1)
+	assert.NilError(t, err)
+	assert.DeepEqual(t, got, expectedPokemon)
+}
+
+func TestAddPokemon(t *testing.T) {
+	ctx := context.Background()
+	p := setup(ctx)
+	defer cleanup(ctx, p)
+
+	expectedPokemon := testPokemon()
+	d := Database{
+		pool: p,
+		log:  slog.Default(),
+	}
+	err := d.AddPokemon(ctx, expectedPokemon)
+	assert.NilError(t, err)
+
+	gotPokemon := &types.Pokemon{}
+	err = d.pool.QueryRow(ctx, `
+		SELECT pokemon
+		FROM pokedex
+		WHERE id = $1
+	`, 1).Scan(&gotPokemon)
+	assert.NilError(t, err)
+	assert.DeepEqual(t, gotPokemon, expectedPokemon)
+}
+
+func TestDeletePokemon(t *testing.T) {
+	ctx := context.Background()
+	p := setup(ctx)
+	defer cleanup(ctx, p)
+
+	expectedPokemon := testPokemon()
+	d := Database{
+		pool: p,
+		log:  slog.Default(),
+	}
+	_, err := d.pool.Exec(ctx,
+		`INSERT INTO pokedex (entry, pokemon) VALUES ($1, $2)`, 1, expectedPokemon,
+	)
+	assert.NilError(t, err, "failed to insert test pokemon")
+
+	err = d.DeletePokemon(ctx, expectedPokemon.Id)
+	assert.NilError(t, err)
+}
+
+func TestUpdatePokemon(t *testing.T) {
+	ctx := context.Background()
+	p := setup(ctx)
+	defer cleanup(ctx, p)
+
+	expectedPokemon := testPokemon()
+	d := Database{
+		pool: p,
+		log:  slog.Default(),
+	}
+	_, err := d.pool.Exec(ctx,
+		`INSERT INTO pokedex (entry, pokemon) VALUES ($1, $2)`, 1, expectedPokemon,
+	)
+	assert.NilError(t, err, "failed to insert test pokemon")
+
+	expectedPokemon.ImageUrl = "shiny_bulbasaur.png"
+	got, err := d.UpdatePokemon(ctx, 1, expectedPokemon)
 	assert.NilError(t, err)
 	assert.DeepEqual(t, got, expectedPokemon)
 }
