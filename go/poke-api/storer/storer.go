@@ -7,6 +7,9 @@ import (
 
 	"playground/poke-api/types"
 
+	"github.com/elastic/go-elasticsearch/v9"
+	"github.com/elastic/go-elasticsearch/v9/typedapi/core/search"
+	estypes "github.com/elastic/go-elasticsearch/v9/typedapi/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -15,15 +18,9 @@ type Database struct {
 	log  *slog.Logger
 }
 
-type Searcher struct {
-	log *slog.Logger
-}
-
-func NewDatabase(pool *pgxpool.Pool) *Database {
-	return &Database{
-		pool: pool,
-		log:  slog.Default(),
-	}
+type Search struct {
+	log    *slog.Logger
+	client *elasticsearch.TypedClient
 }
 
 func (db *Database) GetPokemon(ctx context.Context, pokedexEntry int) (*types.Pokemon, error) {
@@ -39,6 +36,7 @@ func (db *Database) GetPokemon(ctx context.Context, pokedexEntry int) (*types.Po
 	json.Unmarshal(pokemonJSON, pkmn)
 	return pkmn, nil
 }
+
 func (db *Database) AddPokemon(ctx context.Context, pkmn *types.Pokemon) error {
 	_, err := db.pool.Exec(ctx, `
 		INSERT INTO pokedex(entry,pokemon)  VALUES ($1, $2)
@@ -49,6 +47,7 @@ func (db *Database) AddPokemon(ctx context.Context, pkmn *types.Pokemon) error {
 	}
 	return nil
 }
+
 func (db *Database) DeletePokemon(ctx context.Context, pokedexEntry int) error {
 	_, err := db.pool.Exec(ctx, `
 		DELETE FROM pokedex WHERE entry = $1
@@ -59,6 +58,7 @@ func (db *Database) DeletePokemon(ctx context.Context, pokedexEntry int) error {
 	}
 	return nil
 }
+
 func (db *Database) UpdatePokemon(ctx context.Context, pokedexEntry int, pkmn *types.Pokemon) (*types.Pokemon, error) {
 	updatedPokemon := &types.Pokemon{}
 	err := db.pool.QueryRow(ctx, `
@@ -74,6 +74,37 @@ func (db *Database) UpdatePokemon(ctx context.Context, pokedexEntry int, pkmn *t
 	return updatedPokemon, nil
 }
 
-func (s *Searcher) SearchPokemon() ([]*types.Pokemon, error) {
-	return nil, nil
+func (s *Search) SearchPokemon(ctx context.Context, name string, page, pageSize int) ([]*types.Pokemon, int64, error) {
+	from := (page - 1) * pageSize
+	size := pageSize
+	res, err := s.client.
+		Search().
+		Index("pokedex").
+		From(from).
+		Size(size).
+		Request(&search.Request{
+			Query: &estypes.Query{
+				Match: map[string]estypes.MatchQuery{
+					"name": {
+						Query: name,
+					},
+				},
+			},
+		}).Do(ctx)
+	if err != nil {
+		s.log.Error("searching pokemon", "error", err)
+		return nil, 0, types.ErrSearchPokemon
+	}
+	var pkmns []*types.Pokemon
+	for _, pokemon := range res.Hits.Hits {
+		p := &types.Pokemon{}
+		err := json.Unmarshal(pokemon.Source_, &p)
+		if err != nil {
+			s.log.Error("decoding pokemon", "error", err)
+			return nil, 0, types.ErrSearchPokemon
+		}
+		pkmns = append(pkmns, p)
+	}
+	resultCount := res.Hits.Total.Value
+	return pkmns, resultCount, nil
 }
