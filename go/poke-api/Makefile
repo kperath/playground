@@ -1,10 +1,19 @@
-postgres:
+init-postgres-db:
 	docker run --name pokeapi-postgres \
 		-e POSTGRES_USER=postgres \
 		-e POSTGRES_PASSWORD=postgres \
 		-e POSTGRES_DB=pokeapi_test \
+		-v "${PWD}/migrations:/poke-api/migrations" \
 		-p 5432:5432 \
 		-d postgres:latest
+
+init-postgres-migration:
+	docker exec pokeapi-postgres \
+	createdb -U postgres pokeapi 2>/dev/null || true
+	migrate -database "postgres://postgres:postgres@localhost:5432/pokeapi?sslmode=disable" \
+		-path "${PWD}/migrations" up
+
+postgres: init-postgres-db init-postgres-migration
 
 init-elastic-db:
 	docker run --name pokeapi-elastic \
