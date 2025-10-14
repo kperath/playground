@@ -13,6 +13,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+func NewDatabase(log *slog.Logger, pool *pgxpool.Pool) *Database {
+	return &Database{
+		pool: pool,
+		log:  log,
+	}
+}
+
+func NewSearch(log *slog.Logger, esClient *elasticsearch.TypedClient) *Search {
+	return &Search{
+		log:    log,
+		client: esClient,
+	}
+}
+
 type Database struct {
 	pool *pgxpool.Pool
 	log  *slog.Logger

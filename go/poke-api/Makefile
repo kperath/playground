@@ -2,16 +2,19 @@ init-postgres-db:
 	docker run --name pokeapi-postgres \
 		-e POSTGRES_USER=postgres \
 		-e POSTGRES_PASSWORD=postgres \
-		-e POSTGRES_DB=pokeapi_test \
+		-e POSTGRES_DB=pokeapi \
 		-v "${PWD}/migrations:/poke-api/migrations" \
 		-p 5432:5432 \
 		-d postgres:latest
 
 init-postgres-migration:
+	@until nc -z localhost 5432; do \
+		echo "Waiting for Postgres..."; \
+		sleep 2; \
+	done
 	docker exec pokeapi-postgres \
 	createdb -U postgres pokeapi 2>/dev/null || true
-	migrate -database "postgres://postgres:postgres@localhost:5432/pokeapi?sslmode=disable" \
-		-path "${PWD}/migrations" up
+	migrate -database "postgres://postgres:postgres@localhost:5432/pokeapi?sslmode=disable" -path "${PWD}/migrations" up
 
 postgres: init-postgres-db init-postgres-migration
 
@@ -47,3 +50,17 @@ test:
 	TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/pokeapi?sslmode=disable \
 	TEST_ELASTIC_URL=http://localhost:9200 \
 	go test -v ./...
+
+dev:
+	#TODO: build with delve flags
+	go build -o pokedex ./cmd
+	DATABASE_URL=postgres://postgres:postgres@localhost:5432/pokeapi?sslmode=disable \
+	ELASTIC_URL=http://localhost:9200 \
+	./pokedex
+
+dev-clean:
+	rm -f pokedex
+
+# make postgres
+# make elasticsearch
+# make dev

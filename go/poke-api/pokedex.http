@@ -1,0 +1,13 @@
+### Ping endpoint
+GET http://localhost:8080/ping
+
+### Get a Pokemon by ID
+GET http://localhost:8080/pokedex/1
+
+### Add a Pokemon
+POST http://localhost:8080/admin/pokedex
+Content-Type: application/json
+
+{
+  "name": "Bulbasaur"
+}

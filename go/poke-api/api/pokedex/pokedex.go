@@ -2,6 +2,7 @@ package pokedex
 
 import (
 	"context"
+	"log/slog"
 
 	"playground/poke-api/storer"
 	"playground/poke-api/types"
@@ -22,11 +23,13 @@ type Pokedex struct {
 type public struct {
 	db     *storer.Database
 	search *storer.Search
+	log    *slog.Logger
 }
 
 type admin struct {
 	db     *storer.Database
 	search *storer.Search
+	log    *slog.Logger
 }
 
 func New(db *storer.Database, search *storer.Search) *Pokedex {
@@ -34,10 +37,12 @@ func New(db *storer.Database, search *storer.Search) *Pokedex {
 		public: &public{
 			db:     db,
 			search: search,
+			log:    slog.Default(),
 		},
 		admin: &admin{
 			db:     db,
 			search: search,
+			log:    slog.Default(),
 		},
 	}
 }
@@ -76,13 +81,21 @@ func (p *public) SearchPokemon(ctx context.Context, name string, opts *SearchOpt
 }
 
 func (p *public) AddPokemon(ctx context.Context, pkmn *types.Pokemon) error {
+	if pkmn.Id == 0 {
+		p.log.Error("adding: empty pokedex entry value")
+		return types.ErrAddPokemon
+	}
 	return p.db.AddPokemon(ctx, pkmn)
 }
 
-func (p *admin) DeletePokemon(ctx context.Context, pokedexEntry int) error {
-	return p.db.DeletePokemon(ctx, pokedexEntry)
+func (a *admin) DeletePokemon(ctx context.Context, pokedexEntry int) error {
+	return a.db.DeletePokemon(ctx, pokedexEntry)
 }
 
-func (p *admin) UpdatePokemon(ctx context.Context, pokedexEntry int, pkmn *types.Pokemon) (*types.Pokemon, error) {
-	return p.db.UpdatePokemon(ctx, pokedexEntry, pkmn)
+func (a *admin) UpdatePokemon(ctx context.Context, pokedexEntry int, pkmn *types.Pokemon) (*types.Pokemon, error) {
+	if pokedexEntry == 0 {
+		a.log.Error("updating: empty pokedex entry value")
+		return nil, types.ErrUpdatePokemon
+	}
+	return a.db.UpdatePokemon(ctx, pokedexEntry, pkmn)
 }

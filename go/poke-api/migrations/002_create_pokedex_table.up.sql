@@ -9,5 +9,5 @@ CREATE TABLE pokedex (
 INSERT INTO pokedex (entry, pokemon)
 VALUES (
     1,
-    '{"pokedex_number":1,"name":"Bulbasaur","type1":"Grass","type2":"Poison","abilities":["Overgrow","Chlorophyll"],"image":"bulbasaur.png"}'
+    '{"id":1,"name":"Bulbasaur","type1":"Grass","type2":"Poison","abilities":["Overgrow","Chlorophyll"],"image":"bulbasaur.png"}'
 )

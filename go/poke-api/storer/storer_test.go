@@ -52,7 +52,7 @@ func testPokemon() *types.Pokemon {
 		Name:      "Bulbasaur",
 		Type1:     "Grass",
 		Type2:     "Poison",
-		Abilities: [2]string{"Overgrow", "Chlorophyll"},
+		Abilities: []string{"Overgrow", "Chlorophyll"},
 		ImageUrl:  "bulbasaur.png",
 	}
 }
@@ -63,7 +63,7 @@ func TestGetPokemon(t *testing.T) {
 	defer cleanupDB(t, ctx, p)
 
 	expectedPokemon := testPokemon()
-	d := Database{
+	d := &Database{
 		pool: p,
 		log:  slog.Default(),
 	}
@@ -83,7 +83,7 @@ func TestAddPokemon(t *testing.T) {
 	defer cleanupDB(t, ctx, p)
 
 	expectedPokemon := testPokemon()
-	d := Database{
+	d := &Database{
 		pool: p,
 		log:  slog.Default(),
 	}
@@ -106,7 +106,7 @@ func TestDeletePokemon(t *testing.T) {
 	defer cleanupDB(t, ctx, p)
 
 	expectedPokemon := testPokemon()
-	d := Database{
+	d := &Database{
 		pool: p,
 		log:  slog.Default(),
 	}
@@ -125,7 +125,7 @@ func TestUpdatePokemon(t *testing.T) {
 	defer cleanupDB(t, ctx, p)
 
 	expectedPokemon := testPokemon()
-	d := Database{
+	d := &Database{
 		pool: p,
 		log:  slog.Default(),
 	}
