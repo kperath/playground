@@ -8,6 +8,20 @@ GET http://localhost:8080/pokedex/1
 POST http://localhost:8080/admin/pokedex
 Content-Type: application/json
 
-{
-  "name": "Bulbasaur"
-}
+{"id": 4, "name": "Charmander","type1": "Fire","type2": "","abilities": ["Blaze","Solar Power"],"image": "charmander.png"}
+
+### Get Pokemon by ID 4
+GET http://localhost:8080/pokedex/4
+
+### Update a Pokemon
+PUT http://localhost:8080/admin/pokedex
+Content-Type: application/json
+
+{"id": 4, "name": "Charmander","type1": "Fire","type2": "","abilities": ["Blaze","Solar Power"],"image": "charmander_happy.png"}
+
+### Search Pokemon
+GET http://localhost:8080/pokedex/search?name=Char
+
+
+### Delete a Pokemon
+DELETE http://localhost:8080/admin/pokedex/4
