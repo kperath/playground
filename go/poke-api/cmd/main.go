@@ -104,27 +104,22 @@ func main() {
 			e.Logger.Error(err)
 			return c.JSON(http.StatusBadRequest, nil)
 		}
+		// refresh index after insertion
 		return c.JSON(http.StatusAccepted, nil)
 	})
 
-	e.PUT("/admin/pokedex/:id", func(c echo.Context) error {
-		i := c.Param("id")
-		id, err := strconv.Atoi(i)
-		if err != nil {
-			e.Logger.Error(err)
-			return c.JSON(http.StatusBadRequest, nil)
-		}
+	e.PUT("/admin/pokedex", func(c echo.Context) error {
 		req := c.Request()
 		defer req.Body.Close()
 
-		var p *types.Pokemon
+		p := &types.Pokemon{}
 		err = json.NewDecoder(req.Body).Decode(p)
 		if err != nil {
 			e.Logger.Error(err)
 			return c.JSON(http.StatusBadRequest, nil)
 		}
 
-		p, err = dex.UpdatePokemon(c.Request().Context(), id, p)
+		p, err = dex.UpdatePokemon(c.Request().Context(), p.Id, p)
 		if err != nil {
 			e.Logger.Error(err)
 			return c.JSON(http.StatusNotFound, nil)
@@ -132,7 +127,7 @@ func main() {
 		return c.JSON(http.StatusAccepted, p)
 	})
 
-	e.DELETE("/admin/pokemon/:id", func(c echo.Context) error {
+	e.DELETE("/admin/pokedex/:id", func(c echo.Context) error {
 		i := c.Param("id")
 		id, err := strconv.Atoi(i)
 		if err != nil {
@@ -148,10 +143,9 @@ func main() {
 	})
 
 	e.Logger.Fatal(e.Start(":8080"))
-	// test handlers
 	// TODO: add in auth middleware that guards admin endpoints
 	// TODO: /login & JWT
-	// TODO: prometheus instrumentation
+	// TODO: prometheus instrumentation <- THE ENTIRE POINT DON"T LOSE FOCUS
 	// TODO extra: containerize
 	// TODO extra: k8s kind - can stop here tbh
 	// kube-prometheus

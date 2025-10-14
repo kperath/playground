@@ -2,6 +2,7 @@ package storer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -11,8 +12,6 @@ import (
 	"playground/poke-api/types"
 
 	"github.com/elastic/go-elasticsearch/v9"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/core/deletebyquery"
-	estypes "github.com/elastic/go-elasticsearch/v9/typedapi/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"gotest.tools/v3/assert"
 )
@@ -77,7 +76,7 @@ func TestGetPokemon(t *testing.T) {
 	assert.DeepEqual(t, got, expectedPokemon)
 }
 
-func TestAddPokemon(t *testing.T) {
+func TestAddPokemonPostgres(t *testing.T) {
 	ctx := context.Background()
 	p := setupDB(t, ctx)
 	defer cleanupDB(t, ctx, p)
@@ -141,6 +140,7 @@ func TestUpdatePokemon(t *testing.T) {
 }
 
 func setupElastic(t *testing.T) *elasticsearch.TypedClient {
+	ctx := context.Background()
 	client, err := elasticsearch.NewTypedClient(elasticsearch.Config{
 		Addresses: []string{os.Getenv("TEST_ELASTIC_URL")},
 		Username:  "elastic",
@@ -149,18 +149,59 @@ func setupElastic(t *testing.T) *elasticsearch.TypedClient {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	resp, err := client.Indices.Get("pokedex").Do(ctx)
+	_, ok := resp["pokedex"]
+	if ok && err != nil {
+		t.Fatal(err)
+	}
+	if !ok {
+		// Create the index with settings
+		f, err := os.Open("../pokeapi-index.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		_, err = client.Indices.Create("pokedex").Raw(f).Do(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.Indices.Refresh().Index("pokedex").Do(ctx)
+		if err != nil {
+			t.Fatalf("failed to refresh index: %v", err)
+		}
+	}
 	return client
 }
 
 func cleanupElastic(t *testing.T, ctx context.Context, client *elasticsearch.TypedClient) {
-	_, err := client.DeleteByQuery("pokedex").Request(&deletebyquery.Request{
-		Query: &estypes.Query{
-			MatchAll: &estypes.MatchAllQuery{},
-		},
-	}).Do(ctx)
+	_, err := client.Indices.Delete("pokedex").Do(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestAddPokemonElastic(t *testing.T) {
+	ctx := context.Background()
+	client := setupElastic(t)
+	defer cleanupElastic(t, ctx, client)
+
+	s := &Search{
+		client: client,
+		log:    slog.Default(),
+	}
+	expectedPokemon := testPokemon()
+	err := s.AddPokemon(ctx, expectedPokemon)
+	assert.NilError(t, err)
+
+	resp, err := client.
+		Get("pokedex", fmt.Sprintf("%d", expectedPokemon.Id)).
+		Do(ctx)
+	assert.NilError(t, err)
+
+	gotPokemon := &types.Pokemon{}
+	err = json.Unmarshal(resp.Source_, &gotPokemon)
+	assert.DeepEqual(t, gotPokemon, expectedPokemon)
 }
 
 func TestSearchPokemon(t *testing.T) {
@@ -205,7 +246,7 @@ func TestSearchPokemon(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+			// NOTE: don't parallelize tests due to cleaning up of index
 			p, resultCount, err := s.SearchPokemon(ctx, tc.name, 1, 1)
 			assert.Equal(t, resultCount, int64(1))
 			assert.NilError(t, err)

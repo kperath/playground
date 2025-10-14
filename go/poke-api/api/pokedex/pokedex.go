@@ -85,7 +85,17 @@ func (p *public) AddPokemon(ctx context.Context, pkmn *types.Pokemon) error {
 		p.log.Error("adding: empty pokedex entry value")
 		return types.ErrAddPokemon
 	}
-	return p.db.AddPokemon(ctx, pkmn)
+	err := p.db.AddPokemon(ctx, pkmn)
+	if err != nil {
+		p.log.Error("adding pokemon", "db", "postgres")
+		return err
+	}
+	err = p.search.AddPokemon(ctx, pkmn)
+	if err != nil {
+		p.log.Error("adding pokemon", "db", "elasticsearch")
+		return err
+	}
+	return nil
 }
 
 func (a *admin) DeletePokemon(ctx context.Context, pokedexEntry int) error {

@@ -35,6 +35,9 @@ init-elastic-index:
 	curl -X PUT "http://localhost:9200/pokedex" \
 		-H 'Content-Type: application/json' \
 		-d @pokeapi-index.json
+	curl --data '{"id":1,"name":"Bulbasaur","type1":"Grass","type2":"Poison","abilities":["Overgrow","Chlorophyll"],"image":"bulbasaur.png"}' \
+	-X PUT "http://localhost:9200/pokedex/_doc/1"  -H 'Content-Type: application/json'
+
 
 elasticsearch: init-elastic-db init-elastic-index
 

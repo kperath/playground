@@ -3,6 +3,7 @@ package storer
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
 	"playground/poke-api/types"
@@ -110,6 +111,10 @@ func (s *Search) SearchPokemon(ctx context.Context, name string, page, pageSize 
 		return nil, 0, types.ErrSearchPokemon
 	}
 	var pkmns []*types.Pokemon
+	if len(res.Hits.Hits) == 0 {
+		s.log.Error("no results found for query", "name", name)
+		return nil, 0, types.ErrSearchPokemon
+	}
 	for _, pokemon := range res.Hits.Hits {
 		p := &types.Pokemon{}
 		err := json.Unmarshal(pokemon.Source_, &p)
@@ -121,4 +126,14 @@ func (s *Search) SearchPokemon(ctx context.Context, name string, page, pageSize 
 	}
 	resultCount := res.Hits.Total.Value
 	return pkmns, resultCount, nil
+}
+
+func (s *Search) AddPokemon(ctx context.Context, p *types.Pokemon) error {
+	id := fmt.Sprintf("%d", p.Id)
+	_, err := s.client.Create("pokedex", id).Document(p).Do(ctx)
+	if err != nil {
+		s.log.Error("adding pokemon", "error", err.Error())
+		return types.ErrAddPokemon
+	}
+	return nil
 }
